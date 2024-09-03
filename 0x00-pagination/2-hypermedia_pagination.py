@@ -1,17 +1,19 @@
 #!/usr/bin/env python3
-'''Task-2's Module
+'''
+    Simple pagination.
 '''
 import csv
 import math
-from typing import Tuple, List, Dict
+from typing import List
 
 
-def index_range(page: int, page_size: int) -> Tuple[int, int]:
-    '''Retrives the index range from a given page and page size
+def index_range(page, page_size):
     '''
-    startIndex = (page - 1) * page_size
-    endIndex = startIndex + page_size
-    return (startIndex, endIndex)
+        Returns the range of indexes for a given page.
+    '''
+    start = (page - 1) * page_size
+    end = page * page_size
+    return start, end
 
 
 class Server:
@@ -22,7 +24,7 @@ class Server:
     def __init__(self):
         self.__dataset = None
 
-    def dataset(self) -> List[List]:
+    def dataset(self) -> List[List]:  # sourcery skip: identity-comprehension
         """Cached dataset
         """
         if self.__dataset is None:
@@ -34,57 +36,41 @@ class Server:
         return self.__dataset
 
     def get_page(self, page: int = 1, page_size: int = 10) -> List[List]:
-        '''Retrives a page of data
         '''
-        assert type(page) == int and type(page_size) == int
-        assert (page > 0 and page_size > 0)
-        startIndex, endIndex = index_range(page, page_size)
-        paginatedData = self.dataset()
-        if startIndex > len(paginatedData):
-            return []
-        return paginatedData[startIndex:endIndex]
+            Returns a page of data.
+        '''
+        assert isinstance(page, int) and page > 0
+        assert isinstance(page_size, int) and page_size > 0
+        self.dataset()
 
-    def get_hyper(self, page: int = 1, page_size: int = 10) -> Dict:
-        '''retrives a hypermedia about a page
+        if self.dataset() is None:
+            return []
+
+        indexRange = index_range(page, page_size)
+        return self.dataset()[indexRange[0]:indexRange[1]]
+
+    def get_hyper(self, page: int = 1, page_size: int = 10) -> dict:
+        # sourcery skip: inline-immediately-returned-variable
         '''
-        assert type(page) == int and page > 0
-        assert type(page_size) == int and page_size > 0
-        page_data = self.get_page(page, page_size)
-        total_pages = math.ceil(len(self.dataset()) / page_size)
-        page_info = {
-            'page_size': page,
+            Returns info about datset.
+        '''
+        data = self.get_page(page, page_size)
+        dataSet = self.__dataset
+        lenSet = len(dataSet) if dataSet else 0
+
+        totalPages = math.ceil(lenSet / page_size) if dataSet else 0
+        page_size = len(data) if data else 0
+
+        prevPage = page - 1 if page > 1 else None
+        nextPage = page + 1 if page < totalPages else None
+
+        hyperMedia = {
+            'page_size': page_size,
             'page': page,
-            'data': page_data,
-            'next_page': page + 1 if page + 1 < total_pages else None,
-            'prev_page': page - 1 if page > 1 else None,
-            'total_page': total_pages,
+            'data': data,
+            'next_page': nextPage,
+            'prev_page': prevPage,
+            'total_pages': totalPages
         }
-A
-A
-A
-A
-A
-A
-A
-A
-A
-A
-A
-A
-A
-A
-A
-A
-A
-A
-A
-A
-A
-A
-A
-A
-A
-A
-A
-A
-        return page_info
+
+        return hyperMedia
